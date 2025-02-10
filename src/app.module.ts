@@ -6,13 +6,16 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MailModule } from './mail/mail.module';
 @Module({
   imports: [
     UserModule,
+    MailModule,
     FirebaseModule,
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
