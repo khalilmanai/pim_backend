@@ -8,7 +8,8 @@ import { User } from './user-schemas/user.schema';
 
 import { RegisterDto } from './user-dto/register.dto';
 import { Model } from 'mongoose';
-
+import * as bcrypt from 'bcrypt';
+import { Types } from 'mongoose';
 @Injectable()
 export class UserService {
   constructor(
@@ -53,6 +54,10 @@ export class UserService {
     }
   }
 
+  async findUserByEmail(email: string): Promise<User | null> {
+    return await this.userModel.findOne({ email }).exec();
+  }
+
   /**
    * Updates user details partially.
    * @param userId - The ID of the user to update.
@@ -83,6 +88,28 @@ export class UserService {
         'Failed to update user profile: ' + error.message,
       );
     }
+  }
+
+  async changePassword(
+    userId: Types.ObjectId,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      throw new Error('Old password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return { message: 'Password changed successfully' };
   }
 
   async logout(userId: string) {
