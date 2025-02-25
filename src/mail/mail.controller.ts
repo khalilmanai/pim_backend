@@ -5,33 +5,28 @@ import { MailService } from './mail.service';
 export class MailController {
   constructor(private readonly mailService: MailService) {}
 
-  // 1. Méthode pour envoyer un lien de réinitialisation de mot de passe
-  @Post('send-password-reset')
-  async sendPasswordResetLink(@Body('email') email: string) {
-    const resetToken = await this.mailService.generateResetToken(email);
-    await this.mailService.sendPasswordResetLink(email, resetToken);
-    return { message: `Password reset link sent to ${email}` };
+  // Endpoint to send OTP to the user's email
+  @Post('send-otp')
+  async sendOTP(@Body('email') email: string) {
+    await this.mailService.sendOTP(email);
+    return { message: `OTP sent to ${email}` };
   }
 
-  // 2. Méthode pour vérifier le token de réinitialisation (par exemple avant de changer le mot de passe)
-  @Post('verify-reset-token')
-  async verifyResetToken(@Body('resetToken') resetToken: string) {
-    const isValid = await this.mailService.verifyResetToken(resetToken);
+  // Endpoint to verify the OTP provided by the user
+  @Post('verify-otp')
+  async verifyOTP(@Body('email') email: string, @Body('otp') otp: string) {
+    const isValid = await this.mailService.verifyOTP(email, otp);
     if (isValid) {
-      return { message: 'Reset token is valid' };
+      return { message: 'OTP is valid. You can now reset your password.' };
     } else {
-      return { message: 'Invalid reset token' };
+      return { message: 'Invalid OTP. Please try again.' };
     }
   }
 
-  // 3. Méthode pour réinitialiser le mot de passe de l'utilisateur
+  // Endpoint to reset the password after OTP verification
   @Post('reset-password')
-  async resetPassword(@Body('resetToken') resetToken: string, @Body('newPassword') newPassword: string) {
-    const isResetSuccessful = await this.mailService.resetPassword(resetToken, newPassword);
-    if (isResetSuccessful) {
-      return { message: 'Password successfully reset' };
-    } else {
-      return { message: 'Failed to reset password' };
-    }
+  async resetPassword(@Body('email') email: string, @Body('newPassword') newPassword: string) {
+    await this.mailService.resetPassword(email, newPassword);
+    return { message: 'Password successfully reset' };
   }
 }

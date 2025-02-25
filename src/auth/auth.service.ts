@@ -52,7 +52,7 @@ export class AuthService {
   /**
    * Log in a user.
    */
-  async login(loginDto: LoginDto): Promise<{ token: string }> {
+  async login(loginDto: LoginDto): Promise<{ token: string; user: User }> {
     const { email, password } = loginDto;
 
     // Check if user exists
@@ -69,7 +69,7 @@ export class AuthService {
 
     // Generate JWT token
     const token = this.jwtService.sign({ userId: user._id });
-    return { token };
+    return { token, user };
   }
 
   /**

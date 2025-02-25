@@ -17,9 +17,6 @@ export class User extends Document {
 
   @Prop()
   token: string;
-  @Prop()
-  resetToken: string;
-  
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
