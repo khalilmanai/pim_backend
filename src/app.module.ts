@@ -6,6 +6,7 @@ import { FirebaseModule } from './firebase/firebase.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { VehiculeModule } from './vehicule/vehicule.module';
 @Module({
   imports: [
     UserModule,
@@ -13,6 +14,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     ConfigModule.forRoot(),
     MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule,
+    VehiculeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

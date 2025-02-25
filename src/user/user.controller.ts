@@ -70,6 +70,4 @@ export class UserController {
       throw new BadRequestException(error.message);
     }
   }
-
-
 }
