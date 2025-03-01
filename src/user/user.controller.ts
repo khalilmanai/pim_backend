@@ -33,6 +33,11 @@ export class UserController {
     }
   }
 
+  @Get()
+  async getAllUsers(): Promise<User[]> {
+    return this.userService.findAllUsers();
+  }
+
   /**
    * Retrieves a user by ID.
    * @param userId - The ID of the user to retrieve.

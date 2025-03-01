@@ -37,6 +37,27 @@ export class UserService {
    * @returns The user document if found.
    * @throws NotFoundException if the user does not exist.
    */
+  async findAllUsers(): Promise<User[]> {
+    try {
+      const users = await this.userModel.find().exec();
+
+      return users;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(
+        'Failed to retrieve user: ' + error.message,
+      );
+    }
+  }
+
+  /**
+   * Finds a user by their ID.
+   * @param userId - The ID of the user to retrieve.
+   * @returns The user document if found.
+   * @throws NotFoundException if the user does not exist.
+   */
   async findById(userId: string): Promise<User> {
     try {
       const user = await this.userModel.findById(userId).exec();

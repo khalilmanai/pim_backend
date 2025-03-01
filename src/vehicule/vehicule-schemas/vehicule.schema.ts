@@ -5,6 +5,8 @@ import { Document, Types } from 'mongoose';
 export class Vehicule extends Document {
   @Prop({ required: true, unique: true })
   plateNumber: string;
+  @Prop({ required: true, unique: true })
+  plateSerie: string;
 
   @Prop({ required: true })
   brand: string;
@@ -17,6 +19,9 @@ export class Vehicule extends Document {
 
   @Prop({ required: false })
   color: string;
+
+  @Prop({ required: true, unique: true })
+  vin: string; // Vehicle Identification Number
 
   // Reference to the owner (User)
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })

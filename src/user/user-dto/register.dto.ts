@@ -35,4 +35,8 @@ export class RegisterDto {
   image?: string; // This should store the file path or name
 
   token?: string; // Optional field, generated internally after registration
+
+  @IsString()
+  @IsNotEmpty({ message: 'CIN is required' })
+  cin: string;
 }
