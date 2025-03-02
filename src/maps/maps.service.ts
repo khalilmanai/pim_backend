@@ -1,46 +1,27 @@
+// src/maps/maps.service.ts
 import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 
 @Injectable()
 export class MapsService {
-  constructor(private readonly httpService: HttpService, private configService: ConfigService) {}
+  private readonly accessToken: string;
+  private readonly baseUrl = 'https://api.mapbox.com';
 
-  async getRoute(origin: string, destination: string) {
-    const MAPBOX_API_KEY = this.configService.get<string>('MAPBOX_API_KEY');
+  constructor(private configService: ConfigService) {
+    this.accessToken = this.configService.get<string>('MAPBOX_ACCESS_TOKEN');
+  }
 
-    // Geocode the origin and destination to get their coordinates
-    const geocodeOriginUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(origin)}.json?access_token=${MAPBOX_API_KEY}`;
-    const geocodeDestinationUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(destination)}.json?access_token=${MAPBOX_API_KEY}`;
+  async searchLocation(query: string) {
+    const url = `${this.baseUrl}/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${this.accessToken}`;
+    const response = await axios.get(url);
+    return response.data.features;
+  }
 
-    try {
-      // Fetch coordinates for both origin and destination
-      const [originResponse, destinationResponse] = await Promise.all([
-        firstValueFrom(this.httpService.get(geocodeOriginUrl)),
-        firstValueFrom(this.httpService.get(geocodeDestinationUrl)),
-      ]);
-
-      // Get the coordinates from the response
-      const originCoords = originResponse.data.features[0]?.geometry.coordinates;
-      const destinationCoords = destinationResponse.data.features[0]?.geometry.coordinates;
-
-      // Check if coordinates were found
-      if (!originCoords || !destinationCoords) {
-        throw new Error('Unable to geocode one of the locations.');
-      }
-
-      // Format the coordinates as longitude,latitude
-      const originCoordStr = `${originCoords[0]},${originCoords[1]}`;
-      const destinationCoordStr = `${destinationCoords[0]},${destinationCoords[1]}`;
-
-      // Now use the Directions API to get the route
-      const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoordStr};${destinationCoordStr}?geometries=geojson&access_token=${MAPBOX_API_KEY}`;
-      const routeResponse = await firstValueFrom(this.httpService.get(directionsUrl));
-      
-      return routeResponse.data;
-    } catch (error) {
-      throw new Error(`Failed to fetch route: ${error.message}`);
-    }
+  async getDirections(start: [number, number], end: [number, number]) {
+    const coordinates = `${start[0]},${start[1]};${end[0]},${end[1]}`;
+    const url = `${this.baseUrl}/directions/v5/mapbox/driving/${coordinates}?geometries=geojson&access_token=${this.accessToken}`;
+    const response = await axios.get(url);
+    return response.data;
   }
 }
