@@ -4,7 +4,7 @@
 PIM Backend is a NestJS-based API that provides **authentication, user management, and vehicle management**. This documentation covers available endpoints, request structures, and response formats.
 
 - **Tech Stack**: NestJS, MongoDB, Mongoose, JWT Authentication
-- **Base URL**: `http://localhost:3000`
+- **Base URL**: `http://localhost:[env port or default 3000]` or on emulater `http://10.0.2.2:[env port or default 3000]`
 - **Swagger Docs**: [`http://localhost:3000/api-docs`](http://localhost:3000/api-docs)
 
 ---
