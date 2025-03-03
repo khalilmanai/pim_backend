@@ -206,8 +206,7 @@ Authorization: Bearer <JWT_TOKEN>
 
 ## 📌 **Useful Links**
 - **Swagger Docs:** [`http://localhost:3000/api-docs`](http://localhost:3000/api-docs)
-- **Git Repository:** [GitHub Repo](https://github.com/your-repo-link)
-- **Postman Collection:** [Postman API Testing](https://www.postman.com/)
+- **Git Repository:** [GitHub Repo](https://https://github.com/khalilmanai/pim_backend)
 
 🚀 **Developed using NestJS & MongoDB.**
 
