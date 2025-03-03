@@ -1,100 +1,213 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 PIM Backend API Documentation
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 📌 Introduction
+PIM Backend is a NestJS-based API that provides **authentication, user management, and vehicle management**. This documentation covers available endpoints, request structures, and response formats.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+- **Tech Stack**: NestJS, MongoDB, Mongoose, JWT Authentication
+- **Base URL**: `http://localhost:3000`
+- **Swagger Docs**: [`http://localhost:3000/api-docs`](http://localhost:3000/api-docs)
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+## 🛠 **Setup & Installation**
+### 1️⃣ Install dependencies
+```sh
+npm install
 ```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+### 2️⃣ Set up environment variables (`.env`)
+Create a `.env` file in the project root with:
 ```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+PORT=3000
+MONGO_URI=mongodb://localhost:27017/pim
+JWT_SECRET=your_secret_key
 ```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g mau
-$ mau deploy
+### 3️⃣ Run the server
+```sh
+npm run start
 ```
+Now the API will be available at `http://localhost:3000`.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## 🔐 **Authentication API**
+### 🔹 `POST /auth/register`
+**Registers a new user.**
+#### 📝 Request Body:
+```json
+{
+  "email": "johndoe@example.com",
+  "username": "JohnDoe",
+  "password": "StrongPass@123",
+  "cin": "12345678"
+}
+```
+#### ✅ Response:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5..."
+}
+```
+---
+### 🔹 `POST /auth/login`
+**Logs in a user and returns a token.**
+#### 📝 Request Body:
+```json
+{
+  "email": "johndoe@example.com",
+  "password": "StrongPass@123"
+}
+```
+#### ✅ Response:
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5..."
+}
+```
+---
+### 🔹 `POST /auth/logout`
+**Logs out a user (requires authentication).**
+#### 🔐 Headers:
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+#### ✅ Response:
+```json
+{
+  "message": "Successfully logged out"
+}
+```
+---
+## 👤 **User API**
+### 🔹 `GET /users`
+**Retrieves all registered users.**
+#### 🔐 Headers:
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+#### ✅ Response:
+```json
+[
+  {
+    "id": "60d21b4667d0d8992e610c85",
+    "email": "johndoe@example.com",
+    "username": "JohnDoe"
+  }
+]
+```
+---
+### 🔹 `PATCH /users/:id`
+**Updates a user's profile.**
+#### 🔐 Headers:
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+#### 📝 Request Body:
+```json
+{
+  "username": "NewJohnDoe",
+  "email": "newemail@example.com"
+}
+```
+#### ✅ Response:
+```json
+{
+  "message": "User updated successfully"
+}
+```
+---
+## 🚗 **Vehicle API**
+### 🔹 `POST /vehicules`
+**Creates a new vehicle (requires authentication).**
+#### 🔐 Headers:
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+#### 📝 Request Body:
+```json
+{
+  "plateNumber": "123ABC",
+  "plateSerie": "TUN",
+  "brand": "Toyota",
+  "carModel": "Corolla",
+  "year": 2022,
+  "color": "Red",
+  "vin": "1HGCM82633A123456",
+  "owner": "60d21b4667d0d8992e610c85"
+}
+```
+#### ✅ Response:
+```json
+{
+  "message": "Vehicle created successfully"
+}
+```
+---
+### 🔹 `GET /vehicules`
+**Retrieves all vehicles.**
+#### ✅ Response:
+```json
+[
+  {
+    "plateNumber": "123ABC",
+    "brand": "Toyota",
+    "carModel": "Corolla",
+    "year": 2022,
+    "owner": {
+      "id": "60d21b4667d0d8992e610c85",
+      "username": "JohnDoe"
+    }
+  }
+]
+```
+---
+### 🔹 `PUT /vehicules/:id`
+**Updates a vehicle's details.**
+#### 🔐 Headers:
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+#### 📝 Request Body:
+```json
+{
+  "color": "Blue"
+}
+```
+#### ✅ Response:
+```json
+{
+  "message": "Vehicle updated successfully"
+}
+```
+---
+### 🔹 `DELETE /vehicules/:id`
+**Deletes a vehicle.**
+#### 🔐 Headers:
+```
+Authorization: Bearer <JWT_TOKEN>
+```
+#### ✅ Response:
+```json
+{
+  "message": "Vehicle deleted successfully"
+}
+```
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## 🔍 **Error Handling**
+| Status Code | Meaning |
+|-------------|---------|
+| `400 Bad Request` | Invalid data format |
+| `401 Unauthorized` | Missing or invalid authentication token |
+| `403 Forbidden` | Access denied |
+| `404 Not Found` | Requested resource not found |
+| `500 Internal Server Error` | Unexpected server error |
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 📌 **Useful Links**
+- **Swagger Docs:** [`http://localhost:3000/api-docs`](http://localhost:3000/api-docs)
+- **Git Repository:** [GitHub Repo](https://github.com/your-repo-link)
+- **Postman Collection:** [Postman API Testing](https://www.postman.com/)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+🚀 **Developed using NestJS & MongoDB.**
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# pim_backend
