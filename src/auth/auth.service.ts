@@ -4,26 +4,27 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/user-schemas/user.schema';
 import { RegisterDto } from 'src/user/user-dto/register.dto';
 import { LoginDto } from 'src/user/user-dto/login.dto';
+import { ThirdPartyAuthService } from './third-party-auth/third-party.auth';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     private readonly jwtService: JwtService,
+    private readonly thirdPartyAuthService: ThirdPartyAuthService,
   ) {}
 
   /**
    * Register a new user.
    */
   async register(registerDto: RegisterDto): Promise<{ token: string }> {
-    const { email, username, password } = registerDto;
+    const { email, username, password, cin } = registerDto;
 
     // Check if user already exists
     const existingUser = await this.userModel.findOne({ email }).exec();
@@ -39,11 +40,11 @@ export class AuthService {
       email,
       username,
       password: hashedPassword,
+      cin,
     });
     await user.save();
 
     // Generate JWT token
-
     const payload = { userId: user._id };
     const token = this.jwtService.sign(payload);
     return { token };
@@ -52,7 +53,7 @@ export class AuthService {
   /**
    * Log in a user.
    */
-  async login(loginDto: LoginDto): Promise<{ token: string }> {
+  async login(loginDto: LoginDto): Promise<{ token: string; user: User }> {
     const { email, password } = loginDto;
 
     // Check if user exists
@@ -69,7 +70,7 @@ export class AuthService {
 
     // Generate JWT token
     const token = this.jwtService.sign({ userId: user._id });
-    return { token };
+    return { token, user };
   }
 
   /**
@@ -84,12 +85,24 @@ export class AuthService {
   }
 
   /**
-   * Handle third-party sign-in.
+   * Handle third-party sign-in (Google, Facebook, Apple).
    */
   async thirdPartySignIn(
-    provider: string,
-    profile: any,
+    provider: 'google' | 'facebook' | 'apple',
+    token: string,
   ): Promise<{ token: string }> {
+    let profile;
+
+    if (provider === 'google') {
+      profile = await this.thirdPartyAuthService.verifyGoogleToken(token);
+    } else if (provider === 'facebook') {
+      profile = await this.thirdPartyAuthService.verifyFacebookToken(token);
+    } else if (provider === 'apple') {
+      profile = await this.thirdPartyAuthService.verifyAppleToken(token);
+    } else {
+      throw new BadRequestException('Unsupported authentication provider.');
+    }
+
     const { email, username } = profile;
 
     // Check if user already exists
@@ -106,7 +119,7 @@ export class AuthService {
     }
 
     // Generate JWT token
-    const token = this.jwtService.sign({ userId: user._id });
-    return { token };
+    const jwtToken = this.jwtService.sign({ userId: user._id });
+    return { token: jwtToken };
   }
 }

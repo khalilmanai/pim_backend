@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -7,15 +8,25 @@ import {
 } from 'class-validator';
 
 export class RegisterDto {
+  @ApiProperty({
+    example: 'johndoe@example.com',
+    description: 'User email address',
+  })
   @IsEmail({}, { message: 'Invalid email address' })
   @IsNotEmpty({ message: 'Email is required' })
   email: string;
 
+  @ApiProperty({ example: 'JohnDoe123', description: 'Unique username' })
   @IsString()
   @IsNotEmpty({ message: 'Username is required' })
   @MinLength(3, { message: 'Username must be at least 3 characters long' })
   username: string;
 
+  @ApiProperty({
+    example: 'StrongPass@123',
+    description:
+      'Password must contain an uppercase letter, lowercase letter, number, and special character',
+  })
   @IsString()
   @IsNotEmpty({ message: 'Password is required' })
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
@@ -31,8 +42,19 @@ export class RegisterDto {
   })
   password: string;
 
+  @ApiProperty({
+    example: 'profile-image.jpg',
+    description: 'Profile image file path',
+    required: false,
+  })
   @IsString()
-  image?: string; // This should store the file path or name
+  image?: string;
 
-  token?: string; // Optional field, generated internally after registration
+  @ApiProperty({
+    example: '12345678',
+    description: 'National Identity Card number',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'CIN is required' })
+  cin: string;
 }

@@ -8,7 +8,8 @@ import { User } from './user-schemas/user.schema';
 
 import { RegisterDto } from './user-dto/register.dto';
 import { Model } from 'mongoose';
-
+import * as bcrypt from 'bcrypt';
+import { Types } from 'mongoose';
 @Injectable()
 export class UserService {
   constructor(
@@ -36,6 +37,27 @@ export class UserService {
    * @returns The user document if found.
    * @throws NotFoundException if the user does not exist.
    */
+  async findAllUsers(): Promise<User[]> {
+    try {
+      const users = await this.userModel.find().exec();
+
+      return users;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(
+        'Failed to retrieve user: ' + error.message,
+      );
+    }
+  }
+
+  /**
+   * Finds a user by their ID.
+   * @param userId - The ID of the user to retrieve.
+   * @returns The user document if found.
+   * @throws NotFoundException if the user does not exist.
+   */
   async findById(userId: string): Promise<User> {
     try {
       const user = await this.userModel.findById(userId).exec();
@@ -51,6 +73,10 @@ export class UserService {
         'Failed to retrieve user: ' + error.message,
       );
     }
+  }
+
+  async findUserByEmail(email: string): Promise<User | null> {
+    return await this.userModel.findOne({ email }).exec();
   }
 
   /**
@@ -76,13 +102,34 @@ export class UserService {
       if (!updatedUser) {
         throw new NotFoundException(`User with ID "${userId}" not found.`);
       }
-
       return updatedUser;
     } catch (error) {
       throw new BadRequestException(
         'Failed to update user profile: ' + error.message,
       );
     }
+  }
+
+  async changePassword(
+    userId: Types.ObjectId,
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      throw new Error('Old password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return { message: 'Password changed successfully' };
   }
 
   async logout(userId: string) {

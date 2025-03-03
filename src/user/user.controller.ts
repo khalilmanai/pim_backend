@@ -14,7 +14,9 @@ import { RegisterDto } from './user-dto/register.dto';
 import { User } from './user-schemas/user.schema';
 import { UpdateUserDto } from './user-dto/user-update.dto';
 import { UserService } from './user.service';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -25,6 +27,7 @@ export class UserController {
    * @returns The newly created user document.
    */
   @Post()
+  @ApiOperation({ summary: 'Create a new user' })
   async CreateUser(@Body() registerDto: RegisterDto): Promise<User> {
     try {
       return await this.userService.create(registerDto);
@@ -33,12 +36,19 @@ export class UserController {
     }
   }
 
+  @Get()
+  @ApiOperation({ summary: 'Retrieve all users' })
+  async getAllUsers(): Promise<User[]> {
+    return this.userService.findAllUsers();
+  }
+
   /**
    * Retrieves a user by ID.
    * @param userId - The ID of the user to retrieve.
    * @returns The user document if found.
    */
   @Get(':id')
+  @ApiOperation({ summary: 'Retrieve a user by ID' })
   async getUserById(@Param('id') userId: string): Promise<User> {
     try {
       return await this.userService.findById(userId);
@@ -57,6 +67,7 @@ export class UserController {
    * @returns The updated user document.
    */
   @Patch(':id')
+  @ApiOperation({ summary: 'Update user details' })
   async updateUserProfile(
     @Param('id') userId: string,
     @Body() updateData: UpdateUserDto,
@@ -70,6 +81,4 @@ export class UserController {
       throw new BadRequestException(error.message);
     }
   }
-
-
 }

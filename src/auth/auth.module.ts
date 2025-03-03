@@ -6,6 +6,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User, UserSchema } from 'src/user/user-schemas/user.schema';
 import { ThirdPartyAuthService } from './third-party-auth/third-party.auth';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+
 
 @Module({
   imports: [
@@ -20,6 +22,6 @@ import { ThirdPartyAuthService } from './third-party-auth/third-party.auth';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, ThirdPartyAuthService],
+  providers: [AuthService, ThirdPartyAuthService,JwtAuthGuard],
 })
 export class AuthModule {}
