@@ -142,4 +142,16 @@ export class VehiculeService {
     return vehicule;
   }
 
+  async findByPlateSerieAndNumber(
+    serie: string,
+    number: string,
+  ): Promise<Vehicule> {
+    return this.vehiculeModel
+      .findOne({ plateSerie: serie, plateNumber: number })
+      .exec();
+  }
+
+  async findByUser(userId: string): Promise<Vehicule[]> {
+    return this.vehiculeModel.find({ owner: userId }).exec();
+  }
 }

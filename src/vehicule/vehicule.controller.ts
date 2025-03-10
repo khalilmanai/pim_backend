@@ -6,6 +6,7 @@ import {
   Delete,
   Param,
   Body,
+  NotFoundException,
 } from '@nestjs/common';
 import { VehiculeService } from './vehicule.service';
 import { Vehicule } from './vehicule-schemas/vehicule.schema';
@@ -23,7 +24,9 @@ export class VehiculeController {
    */
   @Post()
   @ApiOperation({ summary: 'Create a new vehicle' })
-  async createVehicule(@Body() createVehiculeDto: VehiculeDto): Promise<Vehicule> {
+  async createVehicule(
+    @Body() createVehiculeDto: VehiculeDto,
+  ): Promise<Vehicule> {
     return this.vehiculeService.createVehicule(createVehiculeDto);
   }
 
@@ -106,5 +109,15 @@ export class VehiculeController {
     @Body() updateDto: VehiculeDto,
   ): Promise<Vehicule> {
     return this.vehiculeService.updateCarOwner(plate, updateDto.owner);
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Retrieve all vehicles for a user' })
+  async findByUser(@Param('userId') userId: string): Promise<Vehicule[]> {
+    const vehicles = await this.vehiculeService.findByUser(userId);
+    if (!vehicles.length) {
+      throw new NotFoundException('No vehicles found for this user');
+    }
+    return vehicles;
   }
 }
