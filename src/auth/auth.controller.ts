@@ -1,10 +1,11 @@
-import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ThirdPartyAuthService } from './third-party-auth/third-party.auth';
 import { RegisterDto } from 'src/user/user-dto/register.dto';
 import { LoginDto } from 'src/user/user-dto/login.dto';
 import { ThirdPartySigninDto } from 'src/user/user-dto/third-party-signin.dto';
 import { User } from 'src/user/user-schemas/user.schema';
+import { ObjectId } from 'mongoose';
 
 @Controller('auth')
 export class AuthController {
@@ -32,9 +33,9 @@ export class AuthController {
   /**
    * Log out a user.
    */
-  @Post('logout')
-  async logout(@Req() req): Promise<{ message: string }> {
-    await this.authService.logout(req.user.userId);
+  @Post('logout/:id')
+  async logout(@Param('id') userId: string): Promise<{ message: string }> {
+    await this.authService.logout(userId);
     return { message: 'Successfully logged out' };
   }
 

@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { OAuth2Client } from 'google-auth-library';
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
-import * as jwksClient from 'jwks-rsa';
+import jwksClient from 'jwks-rsa';
 
 @Injectable()
 export class ThirdPartyAuthService {
@@ -32,7 +32,9 @@ export class ThirdPartyAuthService {
         username: payload.name || payload.email.split('@')[0],
       };
     } catch (error) {
-      throw new BadRequestException(`Failed to verify Google token: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to verify Google token: ${error.message}`,
+      );
     }
   }
 
@@ -47,7 +49,9 @@ export class ThirdPartyAuthService {
 
       const { email, name } = response.data;
       if (!email) {
-        throw new BadRequestException('Invalid Facebook token or email not provided');
+        throw new BadRequestException(
+          'Invalid Facebook token or email not provided',
+        );
       }
 
       return {
@@ -55,7 +59,9 @@ export class ThirdPartyAuthService {
         username: name || email.split('@')[0],
       };
     } catch (error) {
-      throw new BadRequestException(`Failed to verify Facebook token: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to verify Facebook token: ${error.message}`,
+      );
     }
   }
 
@@ -92,7 +98,9 @@ export class ThirdPartyAuthService {
 
       return { email, username };
     } catch (error) {
-      throw new BadRequestException(`Failed to verify Apple token: ${error.message}`);
+      throw new BadRequestException(
+        `Failed to verify Apple token: ${error.message}`,
+      );
     }
   }
 }

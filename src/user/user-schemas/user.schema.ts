@@ -12,7 +12,13 @@ export class User extends Document {
   @Prop({ required: true })
   password: string;
 
-  @Prop()
+  @Prop({ nullable: true })
+  birthdate: string;
+
+  @Prop({ nullable: true })
+  phone: string;
+
+  @Prop({ nullable: true })
   image: string;
 
   @Prop()

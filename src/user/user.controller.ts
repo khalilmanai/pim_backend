@@ -14,6 +14,7 @@ import { RegisterDto } from './user-dto/register.dto';
 import { User } from './user-schemas/user.schema';
 import { UpdateUserDto } from './user-dto/user-update.dto';
 import { UserService } from './user.service';
+import { Types } from 'mongoose';
 
 @Controller('users')
 export class UserController {
@@ -53,6 +54,27 @@ export class UserController {
       }
       throw new BadRequestException(error.message);
     }
+  }
+
+  
+  @Post('email')
+  async getUserByEmail(@Body('email') email: string): Promise<User> {
+    try {
+      return await this.userService.findUserByEmail(email);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  @Post('verify-password/:id')
+  async verifyPassword(
+    @Param('id') userId: Types.ObjectId,
+    @Body('oldPassword') oldPassword: string, // Extract 'oldPassword' from the request body
+  ): Promise<boolean> {
+    return this.userService.verifyPassword(userId, oldPassword);
   }
 
   /**

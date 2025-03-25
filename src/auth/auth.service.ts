@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/user-schemas/user.schema';
@@ -77,6 +77,10 @@ export class AuthService {
    * Log out a user by clearing their JWT token.
    */
   async logout(userId: string): Promise<void> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new Error('Invalid user ID');
+    }
+
     const user = await this.userModel.findById(userId).exec();
     if (user) {
       user.token = null; // Clear token field if you track tokens in the database

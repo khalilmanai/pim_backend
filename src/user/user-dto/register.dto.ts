@@ -31,6 +31,9 @@ export class RegisterDto {
   })
   password: string;
 
+
+
+
   @IsString()
   image?: string; // This should store the file path or name
 

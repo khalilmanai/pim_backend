@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './user-schemas/user.schema';
@@ -75,7 +76,7 @@ export class UserService {
     }
   }
 
-  async findUserByEmail(email: string): Promise<User | null> {
+  async findUserByEmail(email: string): Promise<User> {
     return await this.userModel.findOne({ email }).exec();
   }
 
@@ -111,6 +112,36 @@ export class UserService {
     }
   }
 
+  // verify password
+  async verifyPassword(
+    userId: Types.ObjectId,
+    password: string,
+  ): Promise<boolean> {
+    // Input validation
+    if (!userId || !password || typeof password !== 'string') {
+      throw new BadRequestException(
+        'User ID and password are required, and password must be a string',
+      );
+    }
+
+    const user = await this.userModel.findById(userId).exec();
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Ensure user.password is a string
+    if (!user.password || typeof user.password !== 'string') {
+      throw new Error('Invalid password hash in the database');
+    }
+
+    // Compare the password with the hashed password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    return true;
+  }
   async changePassword(
     userId: Types.ObjectId,
     oldPassword: string,
@@ -132,7 +163,32 @@ export class UserService {
 
     return { message: 'Password changed successfully' };
   }
+  async updatePassword(email: string, newPassword: string): Promise<User> {
+    // Find the user by email
+    const user = await this.findUserByEmail(email);
+    if (!user) {
+      throw new Error('User not found'); // Add error handling
+    }
 
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user document and return the updated version
+    const updatedUser = await this.userModel
+      .findOneAndUpdate(
+        { _id: user._id }, // Use _id instead of id (assuming MongoDB default)
+        { password: hashedPassword }, // Update the password field
+        { new: true }, // Return the updated document
+      )
+      .exec();
+
+    if (!updatedUser) {
+      throw new Error('Failed to update user password');
+    }
+
+    // Return the updated user (no need to refetch separately)
+    return updatedUser;
+  }
   async logout(userId: string) {
     const user = await this.findById(userId);
     if (user) {

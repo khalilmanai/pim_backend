@@ -7,6 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { VehiculeModule } from './vehicule/vehicule.module';
+import { InfractionModule } from './infraction/infraction.module';
+import { MailModule } from './mail/mail.module';
+import { SmsModule } from './sms/sms.module';
 @Module({
   imports: [
     UserModule,
@@ -15,6 +18,9 @@ import { VehiculeModule } from './vehicule/vehicule.module';
     MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule,
     VehiculeModule,
+    InfractionModule,
+    MailModule,
+    SmsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
