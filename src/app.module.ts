@@ -10,6 +10,7 @@ import { VehiculeModule } from './vehicule/vehicule.module';
 import { InfractionModule } from './infraction/infraction.module';
 import { MailModule } from './mail/mail.module';
 import { SmsModule } from './sms/sms.module';
+import { MapsModule } from './maps/maps.module';
 @Module({
   imports: [
     UserModule,
@@ -21,6 +22,7 @@ import { SmsModule } from './sms/sms.module';
     InfractionModule,
     MailModule,
     SmsModule,
+    MapsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
