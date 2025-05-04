@@ -17,6 +17,14 @@ export class UserService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
+  async updateFcmToken(userId: string, token: string) {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { fcmToken: token },
+      { new: true }
+    );
+  }
+
   /**
    * Creates a new user.
    * @param registerDto - The data transfer object for user registration.

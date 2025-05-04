@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
+import { config } from 'dotenv';
+
+config(); // Load environment variables
 
 @Injectable()
 export class FirebaseService {
@@ -11,7 +14,7 @@ export class FirebaseService {
     // Initialize Firebase Admin SDK
     this.adminApp = admin.initializeApp({
       credential: admin.credential.cert(require('../firebase-adminsdk.json')),
-      databaseURL: 'https://<YOUR_PROJECT_ID>.firebaseio.com',
+      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
     });
   }
 

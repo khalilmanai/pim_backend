@@ -24,6 +24,9 @@ export class User extends Document {
   @Prop()
   token: string;
 
+  @Prop()
+  fcmToken: string;
+
   @Prop({ required: true, unique: true })
   cin: string; // National Identity Number
 

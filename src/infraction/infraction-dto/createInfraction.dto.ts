@@ -13,4 +13,6 @@ export class CreateInfractionDto {
   location?: string;
   @IsNotEmpty({ message: 'Infraction amount is required' })
   amount?: string;
+  @IsNotEmpty({ message: 'User ID is required' })
+  user: string;
 }

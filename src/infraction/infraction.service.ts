@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Infraction } from './infraction-schema/infractionSchema';
 import { CreateInfractionDto } from './infraction-dto/createInfraction.dto';
+import { User } from '../user/user-schemas/user.schema';
+import { NotificationGateway } from '../websocket/websocket.gateway';
 
 @Injectable()
 export class InfractionService {
@@ -11,13 +13,61 @@ export class InfractionService {
   constructor(
     @InjectModel(Infraction.name)
     private readonly infractionModel: Model<Infraction>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<User>,
+    private readonly notificationGateway: NotificationGateway,
     // private readonly blockchainService: BlockchainService, // Inject BlockchainService
   ) {}
 
   async createSimpleInfraction(
     createInfractionDto: CreateInfractionDto, // Use the DTO
   ): Promise<Infraction> {
-    return this.infractionModel.create(createInfractionDto); // Create the infraction
+    const savedInfraction = await this.infractionModel.create(createInfractionDto); // Create the infraction
+    
+    // Send WebSocket notification if user is associated
+    if (createInfractionDto.user) {
+      const user = await this.userModel.findById(createInfractionDto.user);
+      if (user) {
+        const notification = {
+          type: 'infraction',
+          message: `New infraction detected: ${createInfractionDto.type}`,
+          infractionId: savedInfraction._id,
+          timestamp: new Date(),
+          amount: createInfractionDto.amount,
+          location: createInfractionDto.location
+        };
+        this.notificationGateway.sendNotificationToUser(user._id.toString(), notification);
+      }
+    }
+    
+    return savedInfraction;
+  }
+
+  async sendTestNotification(fcmToken: string, message: string): Promise<string> {
+    const admin = require('firebase-admin');
+    
+    // Initialize Firebase Admin if not already initialized
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        credential: admin.credential.applicationDefault()
+      });
+    }
+    
+    try {
+      const response = await admin.messaging().send({
+        token: fcmToken,
+        notification: {
+          title: 'Infraction Notification',
+          body: message
+        }
+      });
+      
+      this.logger.log(`Successfully sent notification to ${fcmToken}`);
+      return `Notification sent successfully: ${response}`;
+    } catch (error) {
+      this.logger.error(`Failed to send notification: ${error.message}`);
+      throw new Error(`Failed to send notification: ${error.message}`);
+    }
   }
 
   /*   
