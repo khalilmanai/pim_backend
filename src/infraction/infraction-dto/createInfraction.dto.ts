@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsMongoId } from 'class-validator';
 
 export class CreateInfractionDto {
   @IsNotEmpty({ message: 'serie is required' })
@@ -13,4 +13,7 @@ export class CreateInfractionDto {
   location?: string;
   @IsNotEmpty({ message: 'Infraction amount is required' })
   amount?: string;
+  @IsNotEmpty({ message: 'User ID is required' })
+  @IsMongoId({ message: 'Invalid user ID format' })
+  user: string;
 }

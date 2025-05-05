@@ -1,7 +1,6 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ethers } from 'ethers';
-import * as fs from 'fs';
-import * as solc from 'solc';
+import * as contractData from '../../contracts/InfractionContractDeployed.json';
 
 @Injectable()
 export class BlockchainService implements OnModuleInit {
@@ -9,113 +8,97 @@ export class BlockchainService implements OnModuleInit {
   private provider: ethers.JsonRpcProvider;
   private signer: ethers.Wallet;
   public contract: ethers.Contract;
-  private contractAddress: string;
 
-  constructor() {
-    // Initialize provider and signer
-    this.provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
+  onModuleInit() {
+    this.provider = new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_RPC_URL);
     this.signer = new ethers.Wallet(
-      '0x381c1cfa10264c6aed2327b5f8b1d8142e3814e1f046f677128886f225faa654', // Private key from Ganache
+      process.env.BLOCKCHAIN_PRIVATE_KEY,
       this.provider,
     );
-  }
-
-  async onModuleInit() {
-    await this.initializeContract();
-  }
-
-  private async initializeContract() {
-    try {
-      // Try to load existing deployment
-      const deploymentInfo = JSON.parse(
-        fs.readFileSync('contracts/InfractionContract.json', 'utf8'),
-      );
-      this.contractAddress = deploymentInfo.address;
-
-      this.contract = new ethers.Contract(
-        this.contractAddress,
-        deploymentInfo.abi,
-        this.signer,
-      );
-      this.logger.log(`Using existing contract at ${this.contractAddress}`);
-    } catch (error) {
-      // Deploy new contract if none exists
-      this.logger.log('No existing contract found, deploying new...');
-      await this.deployContract();
-    }
-  }
-
-  private async compileContract() {
-    const contractSource = fs.readFileSync(
-      'src/Blockchain/contracts/InfractionContract.sol',
-      'utf8',
+    this.contract = new ethers.Contract(
+      process.env.CONTRACT_ADDRESS,
+      contractData.abi,
+      this.signer,
     );
-
-    const input = {
-      language: 'Solidity',
-      sources: { 'InfractionContract.sol': { content: contractSource } },
-      settings: { outputSelection: { '*': { '*': ['*'] } } },
-    };
-
-    return JSON.parse(solc.compile(JSON.stringify(input)));
+    this.logger.log(`Connected to contract at ${process.env.CONTRACT_ADDRESS}`);
   }
 
-  public async deployContract() {
-    const output = await this.compileContract();
-    const contractABI =
-      output.contracts['InfractionContract.sol'].InfractionContract.abi;
-    const bytecode =
-      output.contracts['InfractionContract.sol'].InfractionContract.evm.bytecode
-        .object;
-
+  async deployContract() {
     const factory = new ethers.ContractFactory(
-      contractABI,
-      bytecode,
+      contractData.abi,
+      contractData.bytecode,
       this.signer,
     );
     const contract = await factory.deploy();
     await contract.waitForDeployment();
-
-    this.contractAddress = await contract.getAddress();
-    this.contract = contract as ethers.Contract;
-
-    // Save deployment info
-    fs.writeFileSync(
-      'src/Blockchain/contracts/InfractionContract.json',
-      JSON.stringify(
-        {
-          address: this.contractAddress,
-          abi: contractABI,
-          deployedAt: new Date().toISOString(),
-        },
-        null,
-        2,
-      ),
-    );
-
-    this.logger.log(`Contract deployed to: ${this.contractAddress}`);
-    return this.contractAddress;
+    const address = await contract.getAddress();
+    this.logger.log(`Contract deployed to ${address}`);
+    return address;
   }
 
-  async recordInfraction(
-    infractionHash: string,
-    vehiclePlate: string,
-    infractionType: string,
-  ): Promise<ethers.ContractTransactionResponse> {
-    if (!this.contract) {
-      throw new Error('Contract not initialized');
+  getContractAddress() {
+    return process.env.CONTRACT_ADDRESS;
+  }
+
+  async recordInfraction(hash: string, plate: string, type: string) {
+    const timestamp = Math.floor(Date.now() / 1000);
+    const tx = await this.contract.recordInfraction(
+      hash,
+      timestamp,
+      plate,
+      type,
+    );
+    this.logger.log(`Sent tx: ${tx.hash}`);
+
+    const receipt = await tx.wait();
+    if (receipt.status !== 1) {
+      throw new Error(`Transaction ${tx.hash} failed`);
     }
 
-    const timestamp = Math.floor(Date.now() / 1000);
-    return this.contract.recordInfraction(
-      infractionHash,
-      timestamp,
-      vehiclePlate,
-      infractionType,
-    );
+    this.logger.log(`Infraction recorded in block ${receipt.blockNumber}`);
+    return receipt;
   }
 
-  async getContractAddress(): Promise<string> {
-    return this.contractAddress;
+  async getInfraction(id: number) {
+    try {
+      if (isNaN(id)) {
+        throw new Error(`Invalid id: ${id}`);
+      }
+
+      const result = await this.contract.getInfraction(id);
+
+      if (!result || result[0] === '0x' || result[0] === '') {
+        throw new Error(`Infraction with ID ${id} does not exist`);
+      }
+
+      return {
+        id,
+        infractionHash: result[0],
+        timestamp: Number(result[1]),
+        vehiclePlate: result[2],
+        infractionType: result[3],
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error fetching infraction with ID ${id}: ${error.message}`,
+      );
+      throw error;
+    }
+  }
+
+  async getAllInfractions() {
+    try {
+      const count = await this.contract.infractions.length;
+      const infractions = [];
+
+      for (let i = 0; i < count; i++) {
+        const inf = await this.getInfraction(i);
+        infractions.push(inf);
+      }
+      return infractions;
+    } catch (error) {
+      this.logger.error(`Error fetching all infractions: ${error.message}`);
+      throw new Error(`Failed to fetch all infractions`);
+    }
   }
 }

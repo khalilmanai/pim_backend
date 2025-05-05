@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   Get,
+  Param,
   BadRequestException,
 } from '@nestjs/common';
 import { BlockchainService } from './blockchain.service';
@@ -51,6 +52,47 @@ export class BlockchainController {
     } catch (error) {
       throw new BadRequestException(
         `Failed to get contract address: ${error.message}`,
+      );
+    }
+  }
+
+  @Get('infractions/:id')
+  async getInfraction(@Param('id') id: string) {
+    try {
+      const parsedId = parseInt(id, 10); // Ensure it's a valid number
+      if (isNaN(parsedId)) {
+        throw new Error(`Invalid ID: ${id}`);
+      }
+
+      const result = await this.blockchainService.getInfraction(parsedId);
+
+      if (
+        !result ||
+        result.infractionHash === '0x' ||
+        result.infractionHash === ''
+      ) {
+        throw new Error(`No infraction found for ID: ${parsedId}`);
+      }
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to fetch infraction: ${error.message}`,
+      );
+    }
+  }
+
+  @Get('infractionslist')
+  async getAllInfractions() {
+    try {
+      const infractions = await this.blockchainService.getAllInfractions();
+      return { success: true, data: infractions };
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to fetch all infractions: ${error.message}`,
       );
     }
   }

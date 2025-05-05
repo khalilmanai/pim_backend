@@ -1,0 +1,1 @@
+export const contractAddress = '0xCfd6dae7bcd6093b2ec9A87f25C1C305c9171B6D'; // Replace with your deployed contract address 

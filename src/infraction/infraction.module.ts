@@ -6,13 +6,14 @@ import {
   Infraction,
   InfractionSchema,
 } from './infraction-schema/infractionSchema';
-import { BlockchainModule } from '../blockchain/blockchain.module'; // Import BlockchainModule
+import { BlockchainModule } from '../blockchain/blockchain.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Infraction.name, schema: InfractionSchema },
     ]),
+    BlockchainModule,
   ],
   controllers: [InfractionController],
   providers: [InfractionService],

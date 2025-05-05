@@ -11,6 +11,8 @@ import { InfractionModule } from './infraction/infraction.module';
 import { MailModule } from './mail/mail.module';
 import { SmsModule } from './sms/sms.module';
 import { MapsModule } from './maps/maps.module';
+import { BlockchainModule } from './blockchain/blockchain.module';
+import { TransactionsModule } from './transactions/transactions.module';
 @Module({
   imports: [
     UserModule,
@@ -23,6 +25,8 @@ import { MapsModule } from './maps/maps.module';
     MailModule,
     SmsModule,
     MapsModule,
+    BlockchainModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
