@@ -18,7 +18,12 @@ export class InfractionService {
   async createSimpleInfraction(
     createInfractionDto: CreateInfractionDto,
   ): Promise<Infraction> {
-    return this.infractionModel.create(createInfractionDto);
+    // ✅ Add remainingAmount = amount when creating
+    return this.infractionModel.create({
+      ...createInfractionDto,
+      remainingAmount: createInfractionDto.amount,
+      status: 'unpaid', // optional: ensure default if needed
+    });
   }
 
   async createInfraction(
@@ -35,12 +40,14 @@ export class InfractionService {
         infractionType,
       );
 
-      // Create infraction in MongoDB
+      // ✅ Add remainingAmount = amount when creating
       const infraction = new this.infractionModel({
         ...createInfractionDto,
         blockchainId: receipt.blockNumber, // Use block number as blockchain ID
         date: new Date(),
-        user: createInfractionDto.user, // Ensure user field is included
+        user: createInfractionDto.user,
+        remainingAmount: createInfractionDto.amount,
+        status: 'unpaid', // optional: ensure default
       });
 
       const savedInfraction = await infraction.save();

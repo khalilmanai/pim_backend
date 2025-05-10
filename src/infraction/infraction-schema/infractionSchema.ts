@@ -23,6 +23,12 @@ export class Infraction {
   user: User;
   @Prop({ required: true })
   amount: number;
+
+  @Prop({ default: 'unpaid' }) // unpaid | paid
+  status: string;
+
+  @Prop()
+  remainingAmount: number;
 }
 
 export const InfractionSchema = SchemaFactory.createForClass(Infraction);

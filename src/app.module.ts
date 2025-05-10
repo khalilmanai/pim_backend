@@ -13,6 +13,7 @@ import { SmsModule } from './sms/sms.module';
 import { MapsModule } from './maps/maps.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { PaymentModule } from './payment/payment.module';
 @Module({
   imports: [
     UserModule,
@@ -27,6 +28,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     MapsModule,
     BlockchainModule,
     TransactionsModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
