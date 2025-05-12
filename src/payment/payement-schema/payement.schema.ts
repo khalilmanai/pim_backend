@@ -9,11 +9,22 @@ export class Payment extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Infraction', required: true })
   infractionId: Types.ObjectId;
 
-  @Prop({ default: 0 })
+  @Prop({ required: true, min: 0 })
   amount: number;
 
-  @Prop({ default: 'pending' }) // pending | paid | failed
+  @Prop({ enum: ['pending', 'paid', 'failed'], default: 'pending' })
   status: string;
+
+  @Prop({ type: Object })
+  receipt: {
+    receiptNumber: string;
+    userId: string;
+    infractionId: string;
+    amount: number;
+    date: Date;
+    status: string; // 'partial' or 'paid'
+    message: string;
+  };
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

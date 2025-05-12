@@ -93,37 +93,25 @@ export class AuthService {
    */
   async thirdPartySignIn(
     provider: 'google' | 'facebook' | 'apple',
-    token: string,
-  ): Promise<{ token: string }> {
-    let profile;
-
-    if (provider === 'google') {
-      profile = await this.thirdPartyAuthService.verifyGoogleToken(token);
-    } else if (provider === 'facebook') {
-      profile = await this.thirdPartyAuthService.verifyFacebookToken(token);
-    } else if (provider === 'apple') {
-      profile = await this.thirdPartyAuthService.verifyAppleToken(token);
-    } else {
-      throw new BadRequestException('Unsupported authentication provider.');
-    }
-
-    const { email, username } = profile;
-
-    // Check if user already exists
-    let user = await this.userModel.findOne({ email }).exec();
+    profile: { email: string; username: string },
+  ) {
+    let user = await this.userModel.findOne({ email: profile.email });
 
     if (!user) {
-      // Register new user if not found
       user = new this.userModel({
-        email,
-        username: username || email.split('@')[0],
-        thirdPartyProvider: provider,
+        email: profile.email,
+        username: profile.username,
+        provider,
       });
       await user.save();
     }
 
-    // Generate JWT token
-    const jwtToken = this.jwtService.sign({ userId: user._id });
-    return { token: jwtToken };
+    const payload = { sub: user._id, email: user.email };
+    const accessToken = this.jwtService.sign(payload);
+
+    return {
+      user,
+      accessToken,
+    };
   }
 }
